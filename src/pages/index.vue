@@ -1,13 +1,15 @@
 <script setup lang="ts">
+
 interface MineBlock {
   x: number
   y: number
   boom?: boolean
   open?: boolean
   mineNum: number
+  flaged: boolean
 }
-const WIDTH = 10
-const HEIGHT = 10
+const WIDTH = 3
+const HEIGHT = 3
 
 const permission = reactive({
   disabled: false,
@@ -16,10 +18,25 @@ const permission = reactive({
 const state: MineBlock[][] = reactive(
   Array.from({ length: WIDTH }, (_, x) => {
     return Array.from({ length: WIDTH }, (_, y): MineBlock => {
-      return { x, y, mineNum: 0, open: false, boom: false }
+      return { x, y, mineNum: 0, open: false, boom: false, flaged: false }
     })
   }),
 )
+
+function checkWin() {
+  const winState = state.every(line => line.every((block) => {
+    if (block.open || block.flaged) {
+      if (block.boom)
+        return block.flaged === true
+      return block.flaged === false
+    }
+    return false
+  }))
+  if (winState) {
+    alert('win!')
+    permission.disabled = true
+  }
+}
 function expendZero(items: MineBlock) {
   if (items.mineNum !== 0)
     return
@@ -42,7 +59,7 @@ function expendZero(items: MineBlock) {
   })
 }
 function getMineClass(items: MineBlock) {
-  return items.open ? '' : 'closed'
+  return `${items.open ? '' : 'closed'}${items.boom ? ' boom' : ''}${items.flaged ? ' flaged' : ''}`
 }
 function cheat() {
   permission.dev = !permission.dev
@@ -59,6 +76,8 @@ function generateMine() {
   calculateNum()
 }
 function btnClick(items: MineBlock) {
+  if (items.flaged)
+    return
   if (items.boom) {
     state.forEach((line) => {
       line.forEach((block) => {
@@ -73,6 +92,7 @@ function btnClick(items: MineBlock) {
   }
   items.open = true
   expendZero(items)
+  checkWin()
 }
 
 generateMine()
@@ -101,6 +121,24 @@ function calculateNum() {
     }
   }
 }
+
+window.oncontextmenu = function(e) {
+  e.preventDefault()
+}
+
+function setFlag(items: MineBlock) {
+  items.open = !items.open
+  items.flaged = !items.flaged
+  checkWin()
+}
+
+function getBlockContext(items: MineBlock) {
+  if ((permission.dev || items.open)) {
+    if (items.flaged)
+      return '🚩'
+    return items.boom ? 'X' : items.mineNum
+  }
+}
 </script>
 
 <template>
@@ -114,11 +152,12 @@ function calculateNum() {
         v-for="(items,i) in line"
         :key="i"
         class="button"
-        :class="getMineClass(items) + (items.boom ? ' boom' : '')"
+        :class="getMineClass(items)"
         :disabled="permission.disabled ? true : false"
         @click="btnClick(items,state)"
+        @click.right="setFlag(items)"
       >
-        {{ (permission.dev || items.open) ? items.boom ? 'X' : items.mineNum : '' }}
+        {{ getBlockContext(items) }}
       </button>
     </div>
     <button class="bottombtn" @click="cheat()">
@@ -151,6 +190,9 @@ function calculateNum() {
 }
 .button.boom {
   background: #CC3333;
+}
+.button.flaged {
+  background: #003366;
 }
 .button.closed {
   background: #003366;
