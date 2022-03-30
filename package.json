@@ -37,7 +37,8 @@
     "extends": "@antfu",
     "rules": {
       "no-console": "off",
-      "semi": ["error","never"]
+      "semi": ["error","never"],
+      "no-alert": "off"
     }
   }
 }
