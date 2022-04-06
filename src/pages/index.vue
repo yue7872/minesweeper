@@ -1,13 +1,6 @@
 <script setup lang="ts">
+import type { MineBlock } from '../types'
 
-interface MineBlock {
-  x: number
-  y: number
-  boom?: boolean
-  open?: boolean
-  mineNum: number
-  flaged: boolean
-}
 const WIDTH = 3
 const HEIGHT = 3
 
@@ -64,6 +57,32 @@ function getMineClass(items: MineBlock) {
 function cheat() {
   permission.dev = !permission.dev
 }
+
+function calculateNum() {
+  const direction = [
+    [0, 1],
+    [0, -1],
+    [1, 0],
+    [-1, 0],
+    [1, 1],
+    [1, -1],
+    [-1, 1],
+    [-1, -1],
+  ]
+  for (const line of state) {
+    for (const block of line) {
+      direction.forEach(([dx, dy]) => {
+        const x2 = block.x + dx
+        const y2 = block.y + dy
+        if (x2 < 0 || x2 >= WIDTH || y2 < 0 || y2 >= HEIGHT)
+          return
+        if (state[x2][y2].boom)
+          block.mineNum++
+      })
+    }
+  }
+}
+
 function generateMine() {
   permission.disabled = false
   for (const line of state) {
@@ -96,31 +115,6 @@ function btnClick(items: MineBlock) {
 }
 
 generateMine()
-
-function calculateNum() {
-  const direction = [
-    [0, 1],
-    [0, -1],
-    [1, 0],
-    [-1, 0],
-    [1, 1],
-    [1, -1],
-    [-1, 1],
-    [-1, -1],
-  ]
-  for (const line of state) {
-    for (const block of line) {
-      direction.forEach(([dx, dy]) => {
-        const x2 = block.x + dx
-        const y2 = block.y + dy
-        if (x2 < 0 || x2 >= WIDTH || y2 < 0 || y2 >= HEIGHT)
-          return
-        if (state[x2][y2].boom)
-          block.mineNum++
-      })
-    }
-  }
-}
 
 window.oncontextmenu = function(e) {
   e.preventDefault()
