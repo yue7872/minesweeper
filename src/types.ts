@@ -6,3 +6,6 @@ export interface MineBlock {
   mineNum: number
   flaged: boolean
 }
+
+export const WIDTH = 10
+export const HEIGHT = 10
