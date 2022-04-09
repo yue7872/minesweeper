@@ -11,6 +11,7 @@ export default function btnClick(items: MineBlock, state: MineBlock[][], permiss
         if (block.boom) {
           permission.disabled = true
           block.open = true
+          block.flaged = false
         }
       })
     })
